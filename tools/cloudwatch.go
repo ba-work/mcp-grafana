@@ -407,9 +407,7 @@ func listCloudWatchNamespaces(ctx context.Context, args ListCloudWatchNamespaces
 		return nil, fmt.Errorf("CloudWatch namespaces returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	bytesLimit := 1024 * 1024 // 1MB limit
-	body := io.LimitReader(resp.Body, int64(bytesLimit))
-	bodyBytes, err := io.ReadAll(body)
+	bodyBytes, err := readResponseBody(resp.Body, 1024*1024) // 1MB limit
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
 	}
@@ -469,9 +467,7 @@ func listCloudWatchMetrics(ctx context.Context, args ListCloudWatchMetricsParams
 		return nil, fmt.Errorf("CloudWatch metrics returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	bytesLimit := 1024 * 1024 // 1MB limit
-	body := io.LimitReader(resp.Body, int64(bytesLimit))
-	bodyBytes, err := io.ReadAll(body)
+	bodyBytes, err := readResponseBody(resp.Body, 1024*1024) // 1MB limit
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
 	}
@@ -533,9 +529,7 @@ func listCloudWatchDimensions(ctx context.Context, args ListCloudWatchDimensions
 		return nil, fmt.Errorf("CloudWatch dimensions returned status %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
-	bytesLimit := 1024 * 1024 // 1MB Limit
-	body := io.LimitReader(resp.Body, int64(bytesLimit))
-	bodyBytes, err := io.ReadAll(body)
+	bodyBytes, err := readResponseBody(resp.Body, 1024*1024) // 1MB limit
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
 	}

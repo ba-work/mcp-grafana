@@ -98,13 +98,12 @@ func (c *athenaClient) resource(ctx context.Context, path string, body map[strin
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	limitedBody := io.LimitReader(resp.Body, int64(athenaResponseLimitBytes))
 	if resp.StatusCode != http.StatusOK {
-		errBody, _ := io.ReadAll(limitedBody)
+		errBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
 		return nil, fmt.Errorf("athena resource %s returned status %d: %s", path, resp.StatusCode, string(errBody))
 	}
 
-	respBytes, err := io.ReadAll(limitedBody)
+	respBytes, err := readResponseBody(resp.Body, int64(athenaResponseLimitBytes))
 	if err != nil {
 		return nil, fmt.Errorf("reading athena resource %s response: %w", path, err)
 	}
