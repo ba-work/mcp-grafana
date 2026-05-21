@@ -27,13 +27,14 @@ func TestReadResponseBody(t *testing.T) {
 		assert.Equal(t, content, string(data))
 	})
 
-	t.Run("returns error when body exceeds limit by one byte", func(t *testing.T) {
+	t.Run("returns truncated data and error when body exceeds limit by one byte", func(t *testing.T) {
 		content := strings.Repeat("x", 51)
 		body := strings.NewReader(content)
-		_, err := readResponseBody(body, 50)
+		data, err := readResponseBody(body, 50)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "response body exceeds maximum size of 50 bytes")
 		assert.Contains(t, err.Error(), "try narrowing your query")
+		assert.Equal(t, strings.Repeat("x", 50), string(data))
 	})
 
 	t.Run("propagates reader errors", func(t *testing.T) {

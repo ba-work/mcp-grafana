@@ -13,8 +13,6 @@ import (
 	mcpgrafana "github.com/grafana/mcp-grafana"
 )
 
-const dsQueryResponseLimit int64 = 10 * 1024 * 1024 // 10MB
-
 // dsQueryPayload builds the standard /api/ds/query request envelope.
 // Each query map should contain datasource-specific fields (refId, datasource, etc.).
 func dsQueryPayload(from, to time.Time, queries ...map[string]interface{}) map[string]interface{} {
@@ -28,7 +26,7 @@ func dsQueryPayload(from, to time.Time, queries ...map[string]interface{}) map[s
 // doDSQuery posts a payload to Grafana's /api/ds/query endpoint and decodes
 // the response into the SDK's QueryDataResponse type.
 func doDSQuery(ctx context.Context, client *http.Client, baseURL string, payload map[string]interface{}) (*backend.QueryDataResponse, error) {
-	return doDSQueryWithLimit(ctx, client, baseURL, payload, dsQueryResponseLimit)
+	return doDSQueryWithLimit(ctx, client, baseURL, payload, defaultResponseLimitBytes)
 }
 
 // doDSQueryWithLimit is like doDSQuery but allows overriding the response size limit.
