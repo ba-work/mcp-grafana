@@ -297,18 +297,11 @@ WHERE TABLE_SCHEMA NOT IN ('INFORMATION_SCHEMA')`, from)
 
 	tables := make([]SnowflakeTableInfo, 0, len(result.Rows))
 	for _, row := range result.Rows {
-		t := SnowflakeTableInfo{}
-		if v, ok := row["TABLE_CATALOG"].(string); ok {
-			t.Database = v
-		}
-		if v, ok := row["TABLE_SCHEMA"].(string); ok {
-			t.Schema = v
-		}
-		if v, ok := row["TABLE_NAME"].(string); ok {
-			t.Name = v
-		}
-		if v, ok := row["TABLE_TYPE"].(string); ok {
-			t.Kind = v
+		t := SnowflakeTableInfo{
+			Database: toStringFromRow(row["TABLE_CATALOG"]),
+			Schema:   toStringFromRow(row["TABLE_SCHEMA"]),
+			Name:     toStringFromRow(row["TABLE_NAME"]),
+			Kind:     toStringFromRow(row["TABLE_TYPE"]),
 		}
 		t.RowCount = toInt64FromRow(row["ROW_COUNT"])
 		t.Bytes = toInt64FromRow(row["BYTES"])
@@ -387,21 +380,12 @@ ORDER BY ORDINAL_POSITION`, from, schema, args.Table)
 
 	columns := make([]SnowflakeColumnInfo, 0, len(result.Rows))
 	for _, row := range result.Rows {
-		col := SnowflakeColumnInfo{}
-		if v, ok := row["COLUMN_NAME"].(string); ok {
-			col.Name = v
-		}
-		if v, ok := row["DATA_TYPE"].(string); ok {
-			col.Type = v
-		}
-		if v, ok := row["IS_NULLABLE"].(string); ok {
-			col.Nullable = v
-		}
-		if v, ok := row["COLUMN_DEFAULT"].(string); ok {
-			col.Default = v
-		}
-		if v, ok := row["COMMENT"].(string); ok {
-			col.Comment = v
+		col := SnowflakeColumnInfo{
+			Name:     toStringFromRow(row["COLUMN_NAME"]),
+			Type:     toStringFromRow(row["DATA_TYPE"]),
+			Nullable: toStringFromRow(row["IS_NULLABLE"]),
+			Default:  toStringFromRow(row["COLUMN_DEFAULT"]),
+			Comment:  toStringFromRow(row["COMMENT"]),
 		}
 		columns = append(columns, col)
 	}

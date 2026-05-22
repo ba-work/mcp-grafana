@@ -98,7 +98,7 @@ func (c *athenaClient) resource(ctx context.Context, path string, body map[strin
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		errBody, _ := readResponseBody(resp.Body, 1024)
+		errBody := readResponseBodyTruncated(resp.Body, 1024)
 		return nil, fmt.Errorf("athena resource %s returned status %d: %s", path, resp.StatusCode, string(errBody))
 	}
 

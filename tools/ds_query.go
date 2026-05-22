@@ -120,6 +120,20 @@ func framesToTabularRows(resp *backend.QueryDataResponse) ([]string, []map[strin
 	return columns, rows, nil
 }
 
+// toStringFromRow extracts a string from a row value that may be string or
+// *string depending on the SDK field type.
+func toStringFromRow(v interface{}) string {
+	switch s := v.(type) {
+	case string:
+		return s
+	case *string:
+		if s != nil {
+			return *s
+		}
+	}
+	return ""
+}
+
 // toInt64FromRow extracts an int64 from a row value that may be float64, int64,
 // or their pointer variants depending on the SDK field type.
 func toInt64FromRow(v interface{}) int64 {

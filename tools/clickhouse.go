@@ -285,15 +285,10 @@ WHERE database NOT IN ('system', 'INFORMATION_SCHEMA', 'information_schema')`
 	// Convert rows to table info
 	tables := make([]ClickHouseTableInfo, 0, len(result.Rows))
 	for _, row := range result.Rows {
-		table := ClickHouseTableInfo{}
-		if v, ok := row["database"].(string); ok {
-			table.Database = v
-		}
-		if v, ok := row["name"].(string); ok {
-			table.Name = v
-		}
-		if v, ok := row["engine"].(string); ok {
-			table.Engine = v
+		table := ClickHouseTableInfo{
+			Database: toStringFromRow(row["database"]),
+			Name:     toStringFromRow(row["name"]),
+			Engine:   toStringFromRow(row["engine"]),
 		}
 		table.TotalRows = toInt64FromRow(row["total_rows"])
 		table.TotalBytes = toInt64FromRow(row["total_bytes"])
@@ -368,21 +363,12 @@ ORDER BY position`, database, args.Table)
 	// Convert rows to column info
 	columns := make([]ClickHouseColumnInfo, 0, len(result.Rows))
 	for _, row := range result.Rows {
-		col := ClickHouseColumnInfo{}
-		if v, ok := row["name"].(string); ok {
-			col.Name = v
-		}
-		if v, ok := row["type"].(string); ok {
-			col.Type = v
-		}
-		if v, ok := row["default_type"].(string); ok {
-			col.DefaultType = v
-		}
-		if v, ok := row["default_expression"].(string); ok {
-			col.DefaultExpression = v
-		}
-		if v, ok := row["comment"].(string); ok {
-			col.Comment = v
+		col := ClickHouseColumnInfo{
+			Name:              toStringFromRow(row["name"]),
+			Type:              toStringFromRow(row["type"]),
+			DefaultType:       toStringFromRow(row["default_type"]),
+			DefaultExpression: toStringFromRow(row["default_expression"]),
+			Comment:           toStringFromRow(row["comment"]),
 		}
 		columns = append(columns, col)
 	}
