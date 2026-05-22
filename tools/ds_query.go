@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -48,13 +49,14 @@ func doDSQueryWithLimit(ctx context.Context, client *http.Client, baseURL string
 	}
 	defer func() { _ = resp.Body.Close() }()
 
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return nil, fmt.Errorf("query returned status %d: %s", resp.StatusCode, string(bodyBytes))
+	}
+
 	body, err := readResponseBody(resp.Body, responseLimit)
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("query returned status %d: %s", resp.StatusCode, string(body[:min(len(body), 1024)]))
 	}
 
 	var queryResp backend.QueryDataResponse

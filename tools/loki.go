@@ -483,10 +483,12 @@ type QueryLokiLogsParams struct {
 
 // QueryMetadata provides context about the query results for AI agents
 type QueryMetadata struct {
-	LinesReturned     int  `json:"linesReturned"`
-	MaxLinesAllowed   int  `json:"maxLinesAllowed"`
-	ResultsTruncated  bool `json:"resultsTruncated"`
-	TotalLinesScanned *int `json:"totalLinesScanned"` // nil if stats unavailable, 0 if actually zero lines scanned
+	LinesReturned     int    `json:"linesReturned"`
+	MaxLinesAllowed   int    `json:"maxLinesAllowed"`
+	ResultsTruncated  bool   `json:"resultsTruncated"`
+	TotalLinesScanned *int   `json:"totalLinesScanned"` // nil if stats unavailable, 0 if actually zero lines scanned
+	StartTime         string `json:"startTime,omitempty"`
+	EndTime           string `json:"endTime,omitempty"`
 }
 
 // QueryLokiLogsResult wraps the Loki query result with optional hints
@@ -677,10 +679,12 @@ func queryLokiLogs(ctx context.Context, args QueryLokiLogsParams) (*QueryLokiLog
 	// Time defaults: range queries default to "last hour"; instant queries
 	// pass through verbatim because the backend chooses the anchor itself.
 	var startTimeStr, endTimeStr string
+	usedDefaultTimeRange := false
 	if args.QueryType == "instant" {
 		startTimeStr = args.StartRFC3339
 		endTimeStr = args.EndRFC3339
 	} else {
+		usedDefaultTimeRange = args.StartRFC3339 == "" && args.EndRFC3339 == ""
 		startTimeStr, endTimeStr = getDefaultTimeRange(args.StartRFC3339, args.EndRFC3339)
 	}
 
@@ -737,6 +741,8 @@ func queryLokiLogs(ctx context.Context, args QueryLokiLogsParams) (*QueryLokiLog
 			MaxLinesAllowed:   limit,
 			ResultsTruncated:  truncated,
 			TotalLinesScanned: result.TotalLinesScanned,
+			StartTime:         startTimeStr,
+			EndTime:           endTimeStr,
 		},
 	}
 
@@ -747,6 +753,14 @@ func queryLokiLogs(ctx context.Context, args QueryLokiLogsParams) (*QueryLokiLog
 			StartTime:      startTime,
 			EndTime:        endTime,
 		})
+	}
+
+	if usedDefaultTimeRange && out.Hints == nil {
+		out.Hints = &EmptyResultHints{
+			Summary:          "This query used the default 1-hour lookback window because startRfc3339 and endRfc3339 were not provided.",
+			PossibleCauses:   []string{},
+			SuggestedActions: []string{"If results seem incomplete or you need data from a wider time range, provide explicit startRfc3339 and endRfc3339 parameters."},
+		}
 	}
 
 	return out, nil
